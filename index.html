@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>METAR Data Analysis Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <!-- Include date picker libraries -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .date-input {
+            display: none;
+        }
+        .hover-scale {
+            transition: transform 0.2s ease-in-out;
+        }
+        .hover-scale:hover {
+            transform: scale(1.02);
+        }
+        .animation-bounce {
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-15px);
+            }
+            60% {
+                transform: translateY(-7px);
+            }
+        }
+        .header-height {
+            height: 3cm; /* Specific 3cm height for header */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header Section -->
+    <header class="bg-white shadow-md header-height">
+        <div class="container mx-auto h-full flex flex-col sm:flex-row items-center justify-start px-4">
+            <div class="flex items-center h-full py-3">
+                <img src="https://mausam.imd.gov.in/responsive/img/logo/imd_logo_a.png" alt="IMD Logo" class="h-full mr-6">
+                <h1 class="text-3xl font-bold text-gray-800">METAR Data Analysis Dashboard</h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Description -->
+    <div class="container mx-auto mt-6 mb-8">
+        <div class="bg-blue-50 border border-blue-200 rounded-md p-4 text-blue-700 text-center shadow-sm">
+            Analyze and compare METAR observation and forecast files easily.
+        </div>
+    </div>
+
+    <!-- Upload Section -->
+    <section class="container mx-auto mb-12 px-4">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Left Div: Observation File -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">Observation File</h2>
+                
+                <!-- Date Pickers -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Start Date and Time</label>
+                        <input type="text" class="date-picker w-full border border-gray-300 rounded-md p-2" placeholder="Select Start Date and Time">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">End Date and Time</label>
+                        <input type="text" class="date-picker w-full border border-gray-300 rounded-md p-2" placeholder="Select End Date and Time">
+                    </div>
+                </div>
+                
+                <!-- ICAO Indexes Dropdown -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">ICAO INDEXES</label>
+                    <select class="w-full border border-gray-300 rounded-md p-2">
+                        <option value="" disabled selected>Select a station</option>
+                        <option value="mumbai">Mumbai</option>
+                        <option value="pune">Pune</option>
+                        <option value="nagpur">Nagpur</option>
+                        <option value="nashik">Nashik</option>
+                        <option value="aurangabad">Aurangabad</option>
+                    </select>
+                    <p class="text-sm text-gray-600 mt-1">Please select a station</p>
+                </div>
+                
+                <!-- Fetch Button -->
+                <div class="text-center mb-5">
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-md transition duration-300 shadow">
+                        Fetch
+                    </button>
+                </div>
+                
+                <!-- File Upload Area -->
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center h-28 flex flex-col items-center justify-center bg-gray-50">
+                    <p class="mb-2 text-gray-600">Drag and drop a file or</p>
+                    <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-medium py-1.5 px-4 rounded-md transition duration-300">
+                        Upload File
+                        <input type="file" class="hidden" accept=".txt">
+                    </label>
+                    <p class="mt-2 text-xs text-gray-500">The File Should be in txt format</p>
+                </div>
+            </div>
+            
+            <!-- Right Div: Forecast File -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">Forecast File</h2>
+                
+                <!-- File Upload Area -->
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center h-48 flex flex-col items-center justify-center bg-gray-50">
+                    <p class="mb-2 text-gray-600">Drag and drop a file or</p>
+                    <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-medium py-1.5 px-4 rounded-md transition duration-300">
+                        Upload File
+                        <input type="file" class="hidden" accept=".txt">
+                    </label>
+                    <p class="mt-2 text-xs text-gray-500">The File Should be in txt format</p>
+                </div>
+                <br><br><br><br><br>
+                <p class="text-xs text-gray-500 mt-1 italic" style="font-size: 15px;font-weight: lighter;font-family: Arial, Helvetica, sans-serif;">Upload TAF-based .txt files for accurate results. Forecasts must align with selected station and date range.</p>
+
+            </div>
+        </div>
+        
+        <!-- Compare Button -->
+        <div class="text-center mt-10">
+            <button id="compareBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-10 rounded-md shadow-md transition duration-300 text-lg">
+                Compare
+            </button>
+        </div>
+    </section>
+
+    <!-- Analysis Section -->
+    <section id="analysisSection" class="container mx-auto mb-12 px-4">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Analysis Result</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <!-- Total Comparisons -->
+            <div class="bg-white rounded-lg shadow-md p-6 text-center hover-scale">
+                <h3 class="text-lg font-medium text-gray-600">Total Comparisons</h3>
+                <p class="text-3xl font-bold mt-2 text-blue-600">42</p>
+            </div>
+            
+            <!-- Accurate Predictions -->
+            <div class="bg-white rounded-lg shadow-md p-6 text-center hover-scale">
+                <h3 class="text-lg font-medium text-gray-600">Accurate Predictions</h3>
+                <p class="text-3xl font-bold mt-2 text-green-600">36</p>
+            </div>
+            
+            <!-- Overall Accuracy -->
+            <div class="bg-white rounded-lg shadow-md p-6 text-center hover-scale">
+                <h3 class="text-lg font-medium text-gray-600">Overall Accuracy</h3>
+                <p class="text-3xl font-bold mt-2 text-purple-600">85.7%</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Detailed Comparison -->
+    <section class="container mx-auto mb-12 px-4">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Detailed Comparison</h2>
+        
+        <div class="overflow-x-auto bg-white rounded-lg shadow-md">
+            <table class="min-w-full">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Date & Time</th>
+                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Station</th>
+                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Observed</th>
+                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Forecasted</th>
+                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Difference</th>
+                        <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    <!-- Sample data rows -->
+                    <tr>
+                        <td class="py-3 px-4 text-sm text-gray-800">2023-05-01 09:00</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">Mumbai</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">CAVOK 28°C</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">CAVOK 27°C</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">1°C</td>
+                        <td class="py-3 px-4 text-sm"><span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">Accurate</span></td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 px-4 text-sm text-gray-800">2023-05-01 12:00</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">Mumbai</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">FEW010 30°C</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">CAVOK 29°C</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">1°C + Cloud</td>
+                        <td class="py-3 px-4 text-sm"><span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">Partial</span></td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 px-4 text-sm text-gray-800">2023-05-01 15:00</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">Mumbai</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">BKN018 29°C</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">FEW015 30°C</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">1°C + Cloud</td>
+                        <td class="py-3 px-4 text-sm"><span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">Partial</span></td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 px-4 text-sm text-gray-800">2023-05-01 18:00</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">Mumbai</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">OVC010 26°C</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">BKN008 27°C</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">1°C + Cloud</td>
+                        <td class="py-3 px-4 text-sm"><span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">Accurate</span></td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 px-4 text-sm text-gray-800">2023-05-02 09:00</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">Pune</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">CAVOK 27°C</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">CAVOK 27°C</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">0°C</td>
+                        <td class="py-3 px-4 text-sm"><span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">Accurate</span></td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 px-4 text-sm text-gray-800">2023-05-02 12:00</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">Pune</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">FEW015 31°C</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">CAVOK 30°C</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">1°C + Cloud</td>
+                        <td class="py-3 px-4 text-sm"><span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">Partial</span></td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 px-4 text-sm text-gray-800">2023-05-02 15:00</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">Pune</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">SCT020 32°C</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">FEW020 31°C</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">1°C + Cloud</td>
+                        <td class="py-3 px-4 text-sm"><span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">Accurate</span></td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 px-4 text-sm text-gray-800">2023-05-02 18:00</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">Pune</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">BKN015 29°C</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">BKN018 28°C</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">1°C + Cloud</td>
+                        <td class="py-3 px-4 text-sm"><span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">Accurate</span></td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 px-4 text-sm text-gray-800">2023-05-03 09:00</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">Nagpur</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">CAVOK 33°C</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">CAVOK 32°C</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">1°C</td>
+                        <td class="py-3 px-4 text-sm"><span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">Accurate</span></td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 px-4 text-sm text-gray-800">2023-05-03 12:00</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">Nagpur</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">CAVOK 36°C</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">FEW025 34°C</td>
+                        <td class="py-3 px-4 text-sm text-gray-800">2°C + Cloud</td>
+                        <td class="py-3 px-4 text-sm"><span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">Mismatch</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section class="container mx-auto mb-16 px-4">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Download Results</h2>
+        
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-6 rounded-md shadow transition duration-300 flex items-center justify-center">
+                <i class="fas fa-file-csv mr-2"></i>
+                Download Comparison as CSV
+            </button>
+            <button class="bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-6 rounded-md shadow transition duration-300 flex items-center justify-center">
+                <i class="fas fa-file-pdf mr-2"></i>
+                Download Full Report
+            </button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-300 py-6">
+        <div class="container mx-auto px-4 text-center">
+            <p>© 2023 METAR Data Analysis Dashboard. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize date pickers
+        document.addEventListener('DOMContentLoaded', function() {
+            flatpickr(".date-picker", {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+            });
+
+            // Smooth scroll to analysis section
+            document.getElementById('compareBtn').addEventListener('click', function() {
+                document.getElementById('analysisSection').scrollIntoView({ 
+                    behavior: 'smooth' 
+                });
+            });
+        });
+    </script>
+</body>
+</html>
